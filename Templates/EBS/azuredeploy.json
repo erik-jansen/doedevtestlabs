@@ -1,75 +1,146 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "newVMName": {
+     "newLabName": {
       "type": "string",
-      "defaultValue": "MyName"
+      "defaultValue": "doedemo",
+      "metadata": {
+        "description": "The name of the new lab instance to be created."
+      }
     },
-    "labName": {
+    "adminUsername": {
       "type": "string",
-      "defaultValue": "doedemo"
+      "metadata": {
+        "description": "Username for the Virtual Machine."
+      }
     },
-    "size": {
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the Virtual Machine."
+      }
+    },
+    "dnsLabelPrefix": {
       "type": "string",
-      "defaultValue": "Standard_DS1"
+      "metadata": {
+        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+      }
     },
-    "userName": {
+    "windowsOSVersion": {
       "type": "string",
-      "defaultValue": "erik"
-    },
-    "password": {
-      "type": "securestring"
+      "defaultValue": "2016-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "2016-Nano-Server",
+        "2016-Datacenter-with-Containers",
+        "2016-Datacenter"
+      ],
+      "metadata": {
+        "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+      }
     }
   },
   "variables": {
-    "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
-    "labVirtualNetworkId": "[resourceId('Microsoft.DevTestLab/labs/virtualnetworks', parameters('labName'), variables('labVirtualNetworkName'))]",
-    "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
-    "vmId": "[resourceId ('Microsoft.DevTestLab/labs/virtualmachines', parameters('labName'), parameters('newVMName'))]",
-    "vmName": "[concat(parameters('labName'), '/', parameters('newVMName'))]"
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
+    "nicName": "myVMNic",
+    "addressPrefix": "10.0.0.0/16",
+    "subnetName": "Subnet",
+    "subnetPrefix": "10.0.0.0/24",
+    "publicIPAddressName": "myPublicIP",
+    "vmName": "SimpleWinVM",
+    "subnetRef": "[concat(variables('virtualNetworkName'), 'Subnet')]",
+    "virtualNetworkName": "[concat('Dtl', parameters('newLabName'))]"
   },
   "resources": [
     {
-      "apiVersion": "2017-04-26-preview",
-      "type": "Microsoft.DevTestLab/labs/virtualmachines",
-      "name": "[variables('vmName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage",
+      "properties": {}
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nicName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "labVirtualNetworkId": "[variables('labVirtualNetworkId')]",
-        "notes": "Windows Server 2012 R2 Datacenter",
-        "galleryImageReference": {
-          "offer": "WindowsServer",
-          "publisher": "MicrosoftWindowsServer",
-          "sku": "2012-R2-Datacenter",
-          "osType": "Windows",
-          "version": "latest"
-        },
-        "size": "[parameters('size')]",
-        "userName": "[parameters('userName')]",
-        "password": "[parameters('password')]",
-        "isAuthenticationWithSshKey": false,
-        "labSubnetName": "[variables('labSubnetName')]",
-        "disallowPublicIpAddress": true,
-        "storageType": "Premium",
-        "allowClaim": false,
-        "networkInterface": {
-          "sharedPublicIpAddressConfiguration": {
-            "inboundNatRules": [
-              {
-                "transportProtocol": "tcp",
-                "backendPort": 3389
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('subnetRef')]"
               }
-            ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2017-03-30",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_A2"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "[parameters('windowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "diskSizeGB": 1023,
+              "lun": 0,
+              "createOption": "Empty"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": "true",
+            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
           }
         }
       }
     }
   ],
   "outputs": {
-    "labVMId": {
+    "hostname": {
       "type": "string",
-      "value": "[variables('vmId')]"
+      "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
     }
   }
 }
