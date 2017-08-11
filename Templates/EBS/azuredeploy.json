@@ -54,7 +54,7 @@
     "subnetName": "[concat(variables('virtualNetworkName'), 'Subnet')]",
     "virtualNetworkName": "[concat('Dtl', parameters('newLabName'))]",
     "Dada": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
-    "vnetID": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/doedemoRG207859/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName')]",
+    "vnetID": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/doedemoRG207859/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]"
   },
   "resources": [
