@@ -1,104 +1,75 @@
 {
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "newVMName": {
       "type": "string",
-      "metadata": {
-        "description": "The name of the new vm to be created."
-      }
+      "defaultValue": "MyName"
     },
-    "existingLabName": {
+    "labName": {
       "type": "string",
-      "metadata": {
-        "description": "The name of an existing lab where the new vm will be created."
-      }
+      "defaultValue": "doedemo"
     },
-    "offer": {
+    "size": {
       "type": "string",
-      "metadata": {
-        "description": "Offer of the gallery image"
-      }
-    },
-    "publisher": {
-      "type": "string",
-      "metadata": {
-        "description": "Publisher of the gallery image"
-      }
-    },
-    "sku": {
-      "type": "string",
-      "metadata": {
-        "description": "Sku of the gallery image"
-      }
-    },
-    "osType": {
-      "type": "string",
-      "metadata": {
-        "description": "OsType of the gallery image"
-      }
-    },
-    "version": {
-      "type": "string",
-      "defaultValue": "latest",
-      "metadata": {
-        "description": "Version of the gallery image"
-      }
-    },
-    "newVMSize": {
-      "type": "string",
-      "metadata": {
-        "description": "The size of the new vm to be created."
-      }
+      "defaultValue": "Standard_DS1"
     },
     "userName": {
       "type": "string",
-      "metadata": {
-        "description": "The username for the local account that will be created on the new vm."
-      }
+      "defaultValue": "erik"
     },
     "password": {
-      "type": "securestring",
-      "metadata": {
-        "description": "The password for the local account that will be created on the new vm."
-      }
+      "type": "securestring"
     }
   },
   "variables": {
     "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
-    "labVirtualNetworkId": "[resourceId('Microsoft.DevTestLab/labs/virtualnetworks', parameters('existingLabName'), variables('labVirtualNetworkName'))]",
-    "labVirtualNetworkName": "[concat('Dtl', parameters('existingLabName'))]",
-    "resourceName": "[concat(parameters('existingLabName'), '/', parameters('newVMName'))]",
-    "resourceType": "Microsoft.DevTestLab/labs/virtualMachines"
+    "labVirtualNetworkId": "[resourceId('Microsoft.DevTestLab/labs/virtualnetworks', parameters('labName'), variables('labVirtualNetworkName'))]",
+    "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
+    "vmId": "[resourceId ('Microsoft.DevTestLab/labs/virtualmachines', parameters('labName'), parameters('newVMName'))]",
+    "vmName": "[concat(parameters('labName'), '/', parameters('newVMName'))]"
   },
   "resources": [
     {
       "apiVersion": "2017-04-26-preview",
-      "type": "Microsoft.DevTestLab/labs/virtualMachines",
-      "name": "[variables('resourceName')]",
+      "type": "Microsoft.DevTestLab/labs/virtualmachines",
+      "name": "[variables('vmName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "size": "[parameters('newVMSize')]",
-        "isAuthenticationWithSshKey": false,
-        "userName": "[parameters('userName')]",
-        "sshKey": "",
-        "password": "[parameters('password')]",
         "labVirtualNetworkId": "[variables('labVirtualNetworkId')]",
-        "labSubnetName": "[variables('labSubnetName')]",
+        "notes": "Windows Server 2012 R2 Datacenter",
         "galleryImageReference": {
-          "Sku": "[parameters('sku')]",
-          "OsType": "[parameters('osType')]",
-          "Publisher": "[parameters('publisher')]",
-          "Offer": "[parameters('offer')]",
-          "Version": "[parameters('version')]"
+          "offer": "WindowsServer",
+          "publisher": "MicrosoftWindowsServer",
+          "sku": "2012-R2-Datacenter",
+          "osType": "Windows",
+          "version": "latest"
+        },
+        "size": "[parameters('size')]",
+        "userName": "[parameters('userName')]",
+        "password": "[parameters('password')]",
+        "isAuthenticationWithSshKey": false,
+        "labSubnetName": "[variables('labSubnetName')]",
+        "disallowPublicIpAddress": true,
+        "storageType": "Premium",
+        "allowClaim": false,
+        "networkInterface": {
+          "sharedPublicIpAddressConfiguration": {
+            "inboundNatRules": [
+              {
+                "transportProtocol": "tcp",
+                "backendPort": 3389
+              }
+            ]
+          }
         }
       }
     }
   ],
   "outputs": {
-    "vmId": {
+    "labVMId": {
       "type": "string",
-      "value": "[resourceId(variables('resourceType'), parameters('existingLabName'), parameters('newVMName'))]"
+      "value": "[variables('vmId')]"
     }
   }
 }
