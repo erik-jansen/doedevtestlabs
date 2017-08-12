@@ -56,9 +56,26 @@
     "Dada": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetID": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/doedemoRG207859/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "osDiskVhdUri" : "https://adoedemo7521.blob.core.windows.net/templates/SimpleWinVM_OsDisk_1_b97e9329ddca451b9721ba85d62a6d2c.vhd"
+    "osDiskVhdUri" : "https://adoedemo7521.blob.core.windows.net/templates/SimpleWinVM_OsDisk_1_b97e9329ddca451b9721ba85d62a6d2c.vhd",
+    "imageName" : "OSImage"
   },
   "resources": [
+    {
+      "type": "Microsoft.Compute/images",
+      "apiVersion": "2016-04-30-preview",
+      "name": "[variables('imageName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "storageProfile": {
+          "osDisk": {
+            "osType": "Windows",
+            "osState": "Generalized",
+            "blobUri": "[variables('osDiskVhdUri')]",
+            "storageAccountType": "Standard_LRS"
+          }
+        }
+      }
+    },
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/publicIPAddresses",
@@ -114,14 +131,8 @@
           "adminPassword": "[parameters('adminPassword')]"
         },
         "storageProfile": {
-          "osDisk": {
-            "name": "[concat(variables('vmName'),'-osDisk')]",
-            "osType": "Windows",
-            "caching": "ReadWrite",
-            "createOption": "FromImage",
-            "image": {
-              "uri": "[variables('osDiskVhdUri')]"
-            }
+          "imageReference": {
+            "id": "[resourceId('Microsoft.Compute/images', variables('imageName'))]"
           }
         },
         "networkProfile": {
