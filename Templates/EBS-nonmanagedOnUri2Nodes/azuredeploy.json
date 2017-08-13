@@ -41,7 +41,7 @@
     "subnetPrefix": "10.0.0.0/24",
     "BEpublicIpAddressName": "myBEPublicIP",
     "FEpublicIpAddressName": "myFEPublicIP",
-    "BEvmName": "WinWith2DataDisks",
+    "BEvmName": "WinWithDD",
     "FEvmName": "WinSimple",
     "subnetName": "[concat(variables('virtualNetworkName'), 'Subnet')]",
     "virtualNetworkName": "[concat('Dtl', parameters('newLabName'))]",
