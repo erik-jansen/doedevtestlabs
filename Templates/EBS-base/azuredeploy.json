@@ -106,7 +106,7 @@
             "id": "[resourceId('Microsoft.Compute/images',variables('dbServerImageName'))]"
           },
           "osDisk": {
-            "name": "[concat(parameters('vmName'),'-OSDisk')]",
+            "name": "[concat(variables('vmName'),'-OSDisk')]",
             "caching": "ReadWrite",
             "createOption": "FromImage",
             "diskSizeGB": 128,
