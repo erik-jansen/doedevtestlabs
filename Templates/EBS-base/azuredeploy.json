@@ -35,7 +35,7 @@
     //"subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
     "publicIPAddressName": "myPublicIP",
-    "vmName": "SimpleWinVM",
+    "vmName": "SimpleWinVMz",
     "subnetName": "[concat(variables('virtualNetworkName'), 'Subnet')]",
     "virtualNetworkName": "[concat('Dtl', parameters('newLabName'))]",
     "Dada": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
@@ -104,15 +104,6 @@
         "storageProfile": {
           "imageReference": {
             "id": "[resourceId('Microsoft.Compute/images',variables('winServerImageName'))]"
-          },
-          "osDisk": {
-            "name": "[concat(variables('vmName'),'-OSDisk')]",
-            "caching": "ReadWrite",
-            "createOption": "FromImage",
-            "diskSizeGB": 128,
-            "managedDisk": {
-              "storageAccountType": "Standard_LRS"
-            }
           }
         },
         "networkProfile": {
