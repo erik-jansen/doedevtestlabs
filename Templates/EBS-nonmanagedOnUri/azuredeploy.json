@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-     "newLabName": {
+    "newLabName": {
       "type": "string",
       "defaultValue": "doedemo",
       "metadata": {
@@ -41,8 +41,10 @@
     "Dada": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetID": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/doedemoRG207859/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "osDiskVhdUri" : "https://doedemorg207859disks594.blob.core.windows.net/vhds/VanillaImage20170813213812.vhd",
-    "imageName" : "WinWith2DataDisks"
+    "osDiskVhdUri": "https://doedemorg207859disks594.blob.core.windows.net/vhds/VanillaImage20170813213812.vhd",
+    "dataDiskVhdUri1": "https://doedemorg207859disks594.blob.core.windows.net/vhds/VanillaImage-20170813-214650.vhd",
+    "dataDiskVhdUri2": "https://doedemorg207859disks594.blob.core.windows.net/vhds/VanillaImage-20170813-214706.vhd",
+    "imageName": "WinWith2DataDisks"
   },
   "resources": [
     {
@@ -57,7 +59,21 @@
             "osState": "Generalized",
             "blobUri": "[variables('osDiskVhdUri')]",
             "storageAccountType": "Standard_LRS"
-          }
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "blobUri": "[variables('dataDiskVhdUri1')]",
+              "storageAccountType": "Standard_LRS",
+              "caching": "ReadOnly"
+            },
+            {
+              "lun": 1,
+              "blobUri": "[variables('dataDiskVhdUri2')]",
+              "storageAccountType": "Standard_LRS",
+              "caching": "ReadOnly"
+            }
+          ]
         }
       }
     },
@@ -131,6 +147,5 @@
       }
     }
   ],
-  "outputs": {
-  }
+  "outputs": {}
 }
