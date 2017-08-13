@@ -103,7 +103,7 @@
         },
         "storageProfile": {
           "imageReference": {
-            "id": "[resourceId('Microsoft.Compute/images',parameters('imageName'))]"
+            "id": "[resourceId('Microsoft.Compute/images',parameters('dbServerImageName'))]"
           },
           "osDisk": {
             "name": "[concat(parameters('vmName'),'-OSDisk')]",
