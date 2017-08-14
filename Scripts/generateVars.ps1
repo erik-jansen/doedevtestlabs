@@ -1,0 +1,1 @@
+New-Item c:\scripts\new_file.txt -type file
