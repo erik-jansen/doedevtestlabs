@@ -48,7 +48,7 @@
     "dbServerImageName": "DB-image"
   },
   "resources": [
-    {
+    /*{
       "type": "Microsoft.Compute/images",
       "apiVersion": "2016-04-30-preview",
       "name": "[variables('winServerImageName')]",
@@ -66,7 +66,7 @@
           }
         }
       }
-    },
+    },*/
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/publicIPAddresses",
@@ -110,8 +110,7 @@
       "name": "[variables('vmName')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
-        "[resourceId('Microsoft.Compute/images/', variables('winServerImageName'))]"
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "properties": {
         "hardwareProfile": {
@@ -124,7 +123,7 @@
         },
         "storageProfile": {
           "imageReference": {
-            "id": "[resourceId('Microsoft.Compute/images', variables('winServerImageName'))]"
+            "id": "[variables('imageID')]"
           }
         },
         "networkProfile": {
