@@ -41,13 +41,32 @@
     "Dada": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "vnetID": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/doedemoRG207859/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "imageID":"/subscriptions/4d529041-83ba-4303-a19d-ff9e7c3ec63c/resourceGroups/doedemoRG207859/providers/Microsoft.Compute/images/SimpleWinVM-image-v1",
+    "imageID":"[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/doedemoRG207859/providers/Microsoft.Compute/images/SimpleWinVM-image-v1)]",
     //"winServerOsDiskVhdUri" : "https://adoedemo7521.blob.core.windows.net/templates/SimpleWinVM_OsDisk_1_b97e9329ddca451b9721ba85d62a6d2c.vhd",
     "winServerImageName": "SimpleWinVM-image-v1",
     //"dbServerOsDiskVhdUri" : "https://adoedemo7521.blob.core.windows.net/templates/SimpleWinVM_OsDisk_1_b97e9329ddca451b9721ba85d62a6d2c.vhd",
     "dbServerImageName": "DB-image"
   },
   "resources": [
+    {
+      "type": "Microsoft.Compute/images",
+      "apiVersion": "2016-04-30-preview",
+      "name": "[variables('imageName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "storageProfile": {
+          "osDisk": {
+            "osType": "Windows",
+            "osState": "Generalized",
+            "managedDisk" : 
+            {
+              "id": "[variables('imageID')]"
+            },
+            "storageAccountType": "Standard_LRS"
+          }
+        }
+      }
+    },
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/publicIPAddresses",
@@ -104,7 +123,7 @@
         },
         "storageProfile": {
           "imageReference": {
-            "id": "[variables('imageID')]"
+            "id": "[variables('imageName')]"
           }
         },
         "networkProfile": {

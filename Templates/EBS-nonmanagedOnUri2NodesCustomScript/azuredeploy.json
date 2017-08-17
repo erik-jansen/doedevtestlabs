@@ -53,7 +53,7 @@
     "BEimageName": "WinWith2DataDisks",
     "FEosDiskVhdUri": "https://adoedemo7521.blob.core.windows.net/templates/SimpleWinVM_OsDisk_1_b97e9329ddca451b9721ba85d62a6d2c.vhd",
     "FEimageName": "WinSimple",
-    "scriptParameters": "-var1 'var1' -var2 'var2'"
+    "scriptParameters": "-var1 var1 -var2 var2"
   },
   "resources": [
     {
@@ -238,13 +238,39 @@
             }
           ]
         }
-      }
-    },
+      },
+      "resources": [
+        {
+          "type": "extensions",
+          "name": "CustomScriptExtension",
+          "apiVersion": "2015-06-15",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines/', variables('FEvmName'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.8",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": [
+                "https://raw.githubusercontent.com/erik-jansen/doedevtestlabs/master/Scripts/generateFile.ps1"
+              ],
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./generateFile.ps1 ', variables('scriptParameters'))]"
+            }
+          }
+        }
+      ]
+    } /*,
     {
       "apiVersion": "2015-06-15",
-      "name": "CustomScriptExtension",
       "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "CustomScriptExtension",
       "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines/', variables('FEvmName'))]"
+      ],
       "properties": {
         "publisher": "Microsoft.Compute",
         "type": "CustomScriptExtension",
@@ -256,7 +282,7 @@
           "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./generateFile.ps1', variables('scriptParameters'))]"
         }
       }
-    }
+    }*/
   ],
   "outputs": {}
 }
