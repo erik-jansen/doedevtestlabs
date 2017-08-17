@@ -51,7 +51,7 @@
     {
       "type": "Microsoft.Compute/images",
       "apiVersion": "2016-04-30-preview",
-      "name": "[variables('imageName')]",
+      "name": "[variables('winServerImageName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "storageProfile": {
@@ -123,7 +123,7 @@
         },
         "storageProfile": {
           "imageReference": {
-            "id": "[variables('imageName')]"
+            "id": "[variables('winServerImageName')]"
           }
         },
         "networkProfile": {
