@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "newVMName": {
+      "type": "string",
+      "defaultValue": "erikdale"
+    },
+    "labName": {
+      "type": "string",
+      "defaultValue": "doedemo"
+    },
+    "size": {
+      "type": "string",
+      "defaultValue": "Standard_DS1"
+    },
+    "userName": {
+      "type": "string",
+      "defaultValue": "erik"
+    },
+    "expirationDate": {
+      "type": "string",
+      "defaultValue": "2017-08-31T14:00:00.000Z"
+    },
+    "password": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+    "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
+    "labVirtualNetworkId": "[resourceId('Microsoft.DevTestLab/labs/virtualnetworks', parameters('labName'), variables('labVirtualNetworkName'))]",
+    "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
+    "vmId": "[resourceId ('Microsoft.DevTestLab/labs/virtualmachines', parameters('labName'), parameters('newVMName'))]",
+    "vmName": "[concat(parameters('labName'), '/', parameters('newVMName'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-04-26-preview",
+      "type": "Microsoft.DevTestLab/labs/virtualmachines",
+      "name": "[concat(variables('vmName'), padLeft(copyIndex(), 2, '0'))]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "[parameters('newVMName')]",
+        "count": 5
+      },
+      "properties": {
+        "labVirtualNetworkId": "[variables('labVirtualNetworkId')]",
+        "notes": "BizTalk Server 2013 R2 Enterprise",
+        "galleryImageReference": {
+          "offer": "BizTalk-Server",
+          "publisher": "MicrosoftBizTalkServer",
+          "sku": "2013-R2-Enterprise",
+          "osType": "Windows",
+          "version": "latest"
+        },
+        "size": "[parameters('size')]",
+        "userName": "[parameters('userName')]",
+        "password": "[parameters('password')]",
+        "isAuthenticationWithSshKey": false,
+        "artifacts": [
+          {
+            "artifactId": "[resourceId('Microsoft.DevTestLab/labs/artifactSources/artifacts', parameters('labName'), 'public repo', 'windows-enable-local-admins')]"
+          }
+        ],
+        "labSubnetName": "[variables('labSubnetName')]",
+        "disallowPublicIpAddress": true,
+        "storageType": "Premium",
+        "allowClaim": true,
+        "expirationDate": "[parameters('expirationDate')]",
+        "networkInterface": {
+          "sharedPublicIpAddressConfiguration": {
+            "inboundNatRules": [
+              {
+                "transportProtocol": "tcp",
+                "backendPort": 3389
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
